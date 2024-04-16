@@ -1,0 +1,11 @@
+#teas + form {
+    border: 1px solid black;
+    box-shadow: 3px 3px 10px black;
+    margin: .5rem;
+    padding: .5rem;
+    visibility: hidden;
+}
+
+.toBeDeleted td {
+    background-color: red;
+}
