@@ -1,6 +1,8 @@
 "use strict"
 
 const baseUrl = "http://172.19.0.12:8761/api"
+const myModal = new bootstrap.Modal('#modifyTea')
+console.log(myModal)
 
 function generateTable(teas) {
     const table = document.createElement('table')
@@ -81,10 +83,10 @@ displayTable()
 
 function generateRow(tea) {
     const tr = document.createElement('tr')
-    const button = document.createElement('button')
-    button.classList.add("btn", "btn-danger", "delete")
-    button.innerHTML = "Törlés"
-    button.addEventListener("click", (e) => {
+    const deleteButton = document.createElement('button')
+    deleteButton.classList.add("btn", "btn-danger", "delete", "w-100")
+    deleteButton.innerHTML = "Törlés"
+    deleteButton.addEventListener("click", (e) => {
         const id = e.target.dataset.id
         const teaSor = document.querySelector(`[data-id="${id}"]`).parentElement.parentElement
         teaSor.classList.add("toBeDeleted")
@@ -92,6 +94,38 @@ function generateRow(tea) {
             deleteTea(id)
         }
     })
+
+    const modifyButton = document.createElement('button')
+    modifyButton.classList.add("btn", "btn-warning", "delete", "mt-2", "w-100")
+    modifyButton.innerHTML = "Módosítás"
+
+    modifyButton.addEventListener("click", (e) => {
+        const id = e.target.dataset.id
+        const teaSor = document.querySelector(`[data-id="${id}"]`).parentElement.parentElement
+        teaSor.classList.add("toBeModified")
+        myModal.show()
+        fetch(`${baseUrl}/teas/${id}`, {
+            headers: {
+                "Accept": "application/json",
+            }
+        })
+            .then(res => {
+                if (!res.ok) {
+                    throw new Error("Hálózati hiba")
+                }
+                return res.json()
+            })
+            .then(tea => {
+                console.log(tea)
+                // const modifyTeaForm = document.querySelector("#modifyTea form")
+                // modifyTeaForm.name.value = tea.name
+            })
+            .catch(error => {
+                console.error(error)
+                alert("A tea betöltése sikertelen")
+            });
+    })
+
     const contents = [
         tea.name,
         tea.brand.name,
@@ -105,8 +139,10 @@ function generateRow(tea) {
     for (const content of contents) {
         const td = document.createElement('td')
         td.append(document.createTextNode(content))
-        button.dataset.id = tea.id
-        td.appendChild(button)
+        deleteButton.dataset.id = tea.id
+        modifyButton.dataset.id = tea.id
+        td.append(deleteButton)
+        td.append(modifyButton)
         tr.append(td)
     }
 
@@ -151,6 +187,9 @@ function sendNewTea(evt) {
         })
         .then(tea => {
             generateRow(tea)
+            document.getElementById("teas").innerHTML = ""
+            form.style.visibility = "hidden"
+            displayTable()
         })
         .catch(err => {
             console.error(err)
@@ -161,7 +200,7 @@ const form = document.querySelector("form")
 
 form.addEventListener("submit", sendNewTea)
 
-document.getElementById("ujTermek").addEventListener("click", () => {
+document.getElementById("ujTermek").addEventListener("click", (e) => {
     form.style.visibility = "unset"
 })
 
@@ -173,9 +212,15 @@ function deleteTea(id){
         if(!res.ok){
             throw Error("Hiba a törlés közben!")
         }
+        const idRow = document.querySelector(`[data-id="${id}"]`).parentElement.parentElement
+        idRow.remove()
         return alert("A tea törlésre került a táblából!")
     })
     .catch(err => {
         console.log("Hiba: " + err)
     })
+}
+  
+function modifyTea(tea) {
+
 }
